@@ -1,0 +1,1119 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Property Dashboard - Colombo 4</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --primary: #2563eb;
+            --primary-light: #3b82f6;
+            --primary-dark: #1d4ed8;
+            --bg-main: #f8fafc;
+            --bg-card: #ffffff;
+            --text-primary: #1e293b;
+            --text-secondary: #64748b;
+            --text-muted: #94a3b8;
+            --border: #e2e8f0;
+            --success: #10b981;
+            --warning: #f59e0b;
+            --accent-orange: #f97316;
+            --accent-pink: #ec4899;
+            --accent-purple: #8b5cf6;
+            --accent-cyan: #06b6d4;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: var(--bg-main);
+            color: var(--text-primary);
+            min-height: 100vh;
+        }
+
+        .app-container {
+            display: flex;
+            min-height: 100vh;
+        }
+
+        /* Sidebar */
+        .sidebar {
+            width: 80px;
+            background: var(--bg-card);
+            border-right: 1px solid var(--border);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 20px 0;
+            position: fixed;
+            height: 100vh;
+            z-index: 100;
+        }
+
+        .logo {
+            width: 45px;
+            height: 45px;
+            background: var(--primary);
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 40px;
+        }
+
+        .logo svg {
+            width: 24px;
+            height: 24px;
+            fill: white;
+        }
+
+        .nav-menu {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            flex: 1;
+        }
+
+        .nav-item {
+            width: 50px;
+            height: 50px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.2s;
+            color: var(--text-muted);
+        }
+
+        .nav-item:hover {
+            background: var(--bg-main);
+            color: var(--primary);
+        }
+
+        .nav-item.active {
+            background: #eff6ff;
+            color: var(--primary);
+        }
+
+        .nav-item svg {
+            width: 22px;
+            height: 22px;
+        }
+
+        .nav-logout {
+            margin-top: auto;
+        }
+
+        /* Main Content */
+        .main-content {
+            flex: 1;
+            margin-left: 80px;
+            padding: 24px;
+            display: flex;
+            flex-direction: column;
+            gap: 24px;
+        }
+
+        /* Header */
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .header h1 {
+            font-size: 1.75rem;
+            font-weight: 700;
+            color: var(--text-primary);
+        }
+
+        .header-actions {
+            display: flex;
+            gap: 16px;
+            align-items: center;
+        }
+
+        .search-btn, .notif-btn {
+            width: 40px;
+            height: 40px;
+            border-radius: 10px;
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            color: var(--text-secondary);
+        }
+
+        .avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, var(--primary), #8b5cf6);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: 600;
+            font-size: 14px;
+        }
+
+        /* Stats Cards */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 20px;
+        }
+
+        .stat-card {
+            background: var(--bg-card);
+            border-radius: 16px;
+            padding: 24px;
+            border: 1px solid var(--border);
+        }
+
+        .stat-card.primary {
+            background: var(--primary);
+            color: white;
+            border: none;
+        }
+
+        .stat-card .label {
+            font-size: 0.875rem;
+            font-weight: 500;
+            margin-bottom: 12px;
+            opacity: 0.9;
+        }
+
+        .stat-card .value {
+            font-size: 2rem;
+            font-weight: 700;
+            margin-bottom: 8px;
+        }
+
+        .stat-card .subtitle {
+            font-size: 0.75rem;
+            opacity: 0.7;
+        }
+
+        .stat-card:not(.primary) .label {
+            color: var(--text-secondary);
+        }
+
+        .stat-card:not(.primary) .value {
+            color: var(--text-primary);
+        }
+
+        .stat-card:not(.primary) .subtitle {
+            color: var(--text-muted);
+        }
+
+        /* Content Grid */
+        .content-grid {
+            display: grid;
+            grid-template-columns: 1fr 380px;
+            gap: 24px;
+        }
+
+        .left-column {
+            display: flex;
+            flex-direction: column;
+            gap: 24px;
+        }
+
+        .right-column {
+            display: flex;
+            flex-direction: column;
+            gap: 24px;
+        }
+
+        /* Cards */
+        .card {
+            background: var(--bg-card);
+            border-radius: 16px;
+            padding: 24px;
+            border: 1px solid var(--border);
+        }
+
+        .card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .card-title {
+            font-size: 1rem;
+            font-weight: 600;
+            color: var(--text-primary);
+        }
+
+        .card-subtitle {
+            font-size: 0.75rem;
+            color: var(--text-muted);
+        }
+
+        .dropdown {
+            padding: 8px 12px;
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            font-size: 0.875rem;
+            color: var(--text-secondary);
+            background: white;
+            cursor: pointer;
+        }
+
+        /* Charts */
+        .chart-container {
+            position: relative;
+            height: 250px;
+        }
+
+        /* Revenue Stats */
+        .revenue-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 20px;
+        }
+
+        .revenue-amount {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--text-primary);
+        }
+
+        .legend {
+            display: flex;
+            gap: 16px;
+            flex-wrap: wrap;
+        }
+
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 0.7rem;
+            color: var(--text-secondary);
+        }
+
+        .legend-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+        }
+
+        /* Donut Chart Card */
+        .donut-card {
+            text-align: center;
+        }
+
+        .donut-container {
+            position: relative;
+            width: 180px;
+            height: 180px;
+            margin: 0 auto 20px;
+        }
+
+        .donut-center {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            text-align: center;
+        }
+
+        .donut-center .label {
+            font-size: 0.75rem;
+            color: var(--text-muted);
+        }
+
+        .donut-center .value {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--text-primary);
+        }
+
+        .donut-legend {
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+            flex-wrap: wrap;
+        }
+
+        .donut-legend-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .donut-legend-item .dot {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+        }
+
+        .donut-legend-item .info {
+            text-align: left;
+        }
+
+        .donut-legend-item .info .label {
+            font-size: 0.65rem;
+            color: var(--text-muted);
+        }
+
+        .donut-legend-item .info .value {
+            font-size: 0.8rem;
+            font-weight: 600;
+            color: var(--text-primary);
+        }
+
+        /* Floor Cards */
+        .floor-cards {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .floor-card {
+            display: flex;
+            gap: 16px;
+            padding: 16px;
+            background: var(--bg-main);
+            border-radius: 12px;
+            border-left: 4px solid;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+
+        .floor-card:hover {
+            transform: translateX(4px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+        }
+
+        .floor-card.qsr { border-left-color: #f97316; }
+        .floor-card.dessert { border-left-color: #ec4899; }
+        .floor-card.cowork { border-left-color: #8b5cf6; }
+        .floor-card.rooftop { border-left-color: #06b6d4; }
+
+        .floor-icon {
+            width: 44px;
+            height: 44px;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+        }
+
+        .floor-icon.qsr { background: #fff7ed; color: #f97316; }
+        .floor-icon.dessert { background: #fdf2f8; color: #ec4899; }
+        .floor-icon.cowork { background: #f5f3ff; color: #8b5cf6; }
+        .floor-icon.rooftop { background: #ecfeff; color: #06b6d4; }
+
+        .floor-info {
+            flex: 1;
+            min-width: 0;
+        }
+
+        .floor-info .title {
+            font-weight: 600;
+            font-size: 0.9rem;
+            color: var(--text-primary);
+            margin-bottom: 4px;
+        }
+
+        .floor-info .desc {
+            font-size: 0.75rem;
+            color: var(--text-muted);
+            line-height: 1.4;
+        }
+
+        .floor-meta {
+            text-align: right;
+            flex-shrink: 0;
+        }
+
+        .floor-meta .sqft {
+            font-size: 0.7rem;
+            color: var(--text-muted);
+            margin-bottom: 4px;
+        }
+
+        .floor-meta .rent {
+            font-weight: 700;
+            font-size: 0.85rem;
+            color: var(--text-primary);
+        }
+
+        /* Property Card */
+        .property-image {
+            width: 100%;
+            height: 120px;
+            background: linear-gradient(135deg, #1e3a5f 0%, #2d5a87 50%, #3b82f6 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 1rem;
+            font-weight: 600;
+            letter-spacing: 2px;
+            border-radius: 12px;
+            margin-bottom: 16px;
+        }
+
+        .property-details .address {
+            font-weight: 600;
+            font-size: 0.95rem;
+            color: var(--text-primary);
+            margin-bottom: 8px;
+        }
+
+        .property-features {
+            display: flex;
+            gap: 12px;
+            margin-bottom: 12px;
+            flex-wrap: wrap;
+        }
+
+        .feature {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            font-size: 0.75rem;
+            color: var(--text-muted);
+        }
+
+        .property-price {
+            font-size: 1.25rem;
+            font-weight: 700;
+            color: var(--primary);
+            margin-bottom: 4px;
+        }
+
+        .property-date {
+            font-size: 0.7rem;
+            color: var(--text-muted);
+        }
+
+        /* Quick Stats */
+        .quick-stat {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 12px;
+            background: #f8fafc;
+            border-radius: 10px;
+        }
+
+        .quick-stat .label {
+            font-size: 0.8rem;
+            color: var(--text-secondary);
+        }
+
+        .quick-stat .value {
+            font-weight: 600;
+            color: var(--text-primary);
+        }
+
+        .quick-stat.highlight {
+            background: #eff6ff;
+        }
+
+        .quick-stat.highlight .label,
+        .quick-stat.highlight .value {
+            color: var(--primary);
+        }
+
+        /* Floor Breakdown Table */
+        .floor-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 16px;
+        }
+
+        .floor-table th, .floor-table td {
+            padding: 12px 8px;
+            text-align: left;
+            border-bottom: 1px solid var(--border);
+            font-size: 0.8rem;
+        }
+
+        .floor-table th {
+            color: var(--text-muted);
+            font-weight: 500;
+            font-size: 0.7rem;
+            text-transform: uppercase;
+        }
+
+        .floor-table td {
+            color: var(--text-primary);
+        }
+
+        .floor-table tr:last-child td {
+            border-bottom: none;
+            font-weight: 600;
+            background: #f8fafc;
+        }
+
+        .badge {
+            display: inline-block;
+            padding: 3px 8px;
+            border-radius: 20px;
+            font-size: 0.65rem;
+            font-weight: 500;
+        }
+
+        .badge.qsr { background: #fff7ed; color: #ea580c; }
+        .badge.dessert { background: #fdf2f8; color: #db2777; }
+        .badge.cowork { background: #f5f3ff; color: #7c3aed; }
+        .badge.rooftop { background: #ecfeff; color: #0891b2; }
+
+        /* Mobile Responsive */
+        @media (max-width: 1200px) {
+            .content-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .right-column {
+                display: grid;
+                grid-template-columns: repeat(2, 1fr);
+                gap: 20px;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .sidebar {
+                display: none;
+            }
+            
+            .main-content {
+                margin-left: 0;
+                padding: 16px;
+            }
+            
+            .stats-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .right-column {
+                grid-template-columns: 1fr;
+            }
+            
+            .header h1 {
+                font-size: 1.25rem;
+            }
+            
+            .mobile-nav {
+                display: flex;
+                position: fixed;
+                bottom: 0;
+                left: 0;
+                right: 0;
+                background: var(--bg-card);
+                border-top: 1px solid var(--border);
+                padding: 12px 20px;
+                justify-content: space-around;
+                z-index: 100;
+            }
+            
+            .mobile-nav .nav-item {
+                width: 44px;
+                height: 44px;
+            }
+            
+            .main-content {
+                padding-bottom: 80px;
+            }
+
+            .floor-card {
+                flex-direction: column;
+                gap: 12px;
+            }
+
+            .floor-meta {
+                text-align: left;
+                display: flex;
+                justify-content: space-between;
+            }
+        }
+
+        @media (min-width: 769px) {
+            .mobile-nav {
+                display: none;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="app-container">
+        <!-- Sidebar -->
+        <aside class="sidebar">
+            <div class="logo">
+                <svg viewBox="0 0 24 24"><path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"/></svg>
+            </div>
+            <nav class="nav-menu">
+                <div class="nav-item active" title="Dashboard">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>
+                </div>
+                <div class="nav-item" title="Properties">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+                </div>
+                <div class="nav-item" title="Insurance">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+                </div>
+                <div class="nav-item" title="Income">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
+                </div>
+                <div class="nav-item" title="Chat">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+                </div>
+                <div class="nav-item nav-logout" title="Logout">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+                </div>
+            </nav>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <!-- Header -->
+            <header class="header">
+                <h1>Property Dashboard</h1>
+                <div class="header-actions">
+                    <button class="search-btn">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+                    </button>
+                    <button class="notif-btn">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
+                    </button>
+                    <div class="avatar">RO</div>
+                </div>
+            </header>
+
+            <!-- Stats Cards -->
+            <div class="stats-grid">
+                <div class="stat-card primary">
+                    <div class="label">Total Monthly Rental</div>
+                    <div class="value">Rs. 5.26M</div>
+                    <div class="subtitle">22,000 sq ft | Colombo 4</div>
+                </div>
+                <div class="stat-card">
+                    <div class="label">F&B Floors (GF + L2 + L4)</div>
+                    <div class="value">Rs. 3.89M</div>
+                    <div class="subtitle">QSR, Dessert, Rooftop Dining</div>
+                </div>
+                <div class="stat-card">
+                    <div class="label">Co-Work / Office (L3)</div>
+                    <div class="value">Rs. 1.37M</div>
+                    <div class="subtitle">IT, BPO, Financial Services</div>
+                </div>
+            </div>
+
+            <!-- Content Grid -->
+            <div class="content-grid">
+                <div class="left-column">
+                    <!-- Floor Concepts -->
+                    <div class="card">
+                        <div class="card-header">
+                            <div>
+                                <div class="card-title">Floor Concepts & Positioning</div>
+                                <div class="card-subtitle">Strategic tenant mix for Colombo 4</div>
+                            </div>
+                        </div>
+                        <div class="floor-cards">
+                            <!-- Ground Floor -->
+                            <div class="floor-card qsr">
+                                <div class="floor-icon qsr">
+                                    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8h1a4 4 0 0 1 0 8h-1"/><path d="M2 8h16v9a4 4 0 0 1-4 4H6a4 4 0 0 1-4-4V8z"/><line x1="6" y1="1" x2="6" y2="4"/><line x1="10" y1="1" x2="10" y2="4"/><line x1="14" y1="1" x2="14" y2="4"/></svg>
+                                </div>
+                                <div class="floor-info">
+                                    <div class="title">Ground Floor — Anchor QSR + Pastry Café</div>
+                                    <div class="desc">QSR anchor (burger, fried chicken, rice bowls) + premium pastry unit (SPONGE, Butter Boutique). High footfall, delivery friendly, strong signage.</div>
+                                </div>
+                                <div class="floor-meta">
+                                    <div class="sqft">4,000 sq ft</div>
+                                    <div class="rent">Rs. 1.33M</div>
+                                </div>
+                            </div>
+
+                            <!-- Level 2 -->
+                            <div class="floor-card dessert">
+                                <div class="floor-icon dessert">
+                                    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/></svg>
+                                </div>
+                                <div class="floor-info">
+                                    <div class="title">Level 2 — Dessert & Lifestyle</div>
+                                    <div class="desc">Dessert bars, ice cream, tea lounges, light bites. Wellness retail, cosmetics, athleisure. Natural continuation of dining journey.</div>
+                                </div>
+                                <div class="floor-meta">
+                                    <div class="sqft">4,500 sq ft</div>
+                                    <div class="rent">Rs. 1.26M</div>
+                                </div>
+                            </div>
+
+                            <!-- 3rd Floor -->
+                            <div class="floor-card cowork">
+                                <div class="floor-icon cowork">
+                                    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="3" width="20" height="14" rx="2" ry="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>
+                                </div>
+                                <div class="floor-info">
+                                    <div class="title">3rd Floor — Co-Work & Back Office</div>
+                                    <div class="desc">Co-work operators, IT back office, financial services. Stable weekday demand, cross usage with F&B. Plug-and-play or bare shell options.</div>
+                                </div>
+                                <div class="floor-meta">
+                                    <div class="sqft">9,000 sq ft</div>
+                                    <div class="rent">Rs. 1.37M</div>
+                                </div>
+                            </div>
+
+                            <!-- 4th Floor -->
+                            <div class="floor-card rooftop">
+                                <div class="floor-icon rooftop">
+                                    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>
+                                </div>
+                                <div class="floor-info">
+                                    <div class="title">4th Floor — Rooftop Dining & Events</div>
+                                    <div class="desc">Signature rooftop restaurant or lounge. City views, sunset positioning. High-margin F&B, private dining, event space opportunities.</div>
+                                </div>
+                                <div class="floor-meta">
+                                    <div class="sqft">4,500 sq ft</div>
+                                    <div class="rent">Rs. 1.30M</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Revenue Chart -->
+                    <div class="card">
+                        <div class="revenue-header">
+                            <div>
+                                <div class="card-title">Annual Revenue by Category</div>
+                                <div class="revenue-amount">Rs. 63.1M / year</div>
+                            </div>
+                            <div class="legend">
+                                <div class="legend-item">
+                                    <span class="legend-dot" style="background: #f97316;"></span>
+                                    QSR + Pastry
+                                </div>
+                                <div class="legend-item">
+                                    <span class="legend-dot" style="background: #ec4899;"></span>
+                                    Dessert & Lifestyle
+                                </div>
+                                <div class="legend-item">
+                                    <span class="legend-dot" style="background: #8b5cf6;"></span>
+                                    Co-Work
+                                </div>
+                                <div class="legend-item">
+                                    <span class="legend-dot" style="background: #06b6d4;"></span>
+                                    Rooftop
+                                </div>
+                            </div>
+                        </div>
+                        <div class="chart-container">
+                            <canvas id="revenueChart"></canvas>
+                        </div>
+                    </div>
+
+                    <!-- Floor Breakdown Table -->
+                    <div class="card">
+                        <div class="card-header">
+                            <div class="card-title">Detailed Rental Breakdown</div>
+                        </div>
+                        <table class="floor-table">
+                            <thead>
+                                <tr>
+                                    <th>Floor</th>
+                                    <th>Concept</th>
+                                    <th>Sq Ft</th>
+                                    <th>Rate/Sq Ft</th>
+                                    <th>Monthly</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td>Ground</td>
+                                    <td>QSR Anchor <span class="badge qsr">F&B</span></td>
+                                    <td>2,500</td>
+                                    <td>Rs. 350</td>
+                                    <td>Rs. 875,000</td>
+                                </tr>
+                                <tr>
+                                    <td>Ground</td>
+                                    <td>Pastry Café <span class="badge qsr">F&B</span></td>
+                                    <td>1,500</td>
+                                    <td>Rs. 300</td>
+                                    <td>Rs. 450,000</td>
+                                </tr>
+                                <tr>
+                                    <td>Level 2</td>
+                                    <td>Dessert & Lifestyle <span class="badge dessert">Lifestyle</span></td>
+                                    <td>4,500</td>
+                                    <td>Rs. 280</td>
+                                    <td>Rs. 1,260,000</td>
+                                </tr>
+                                <tr>
+                                    <td>3rd Floor</td>
+                                    <td>Co-Work / Office <span class="badge cowork">Office</span></td>
+                                    <td>4,500</td>
+                                    <td>Rs. 180</td>
+                                    <td>Rs. 810,000</td>
+                                </tr>
+                                <tr>
+                                    <td>3rd Floor</td>
+                                    <td>Back Office <span class="badge cowork">Office</span></td>
+                                    <td>4,500</td>
+                                    <td>Rs. 125</td>
+                                    <td>Rs. 562,500</td>
+                                </tr>
+                                <tr>
+                                    <td>4th Floor</td>
+                                    <td>Rooftop Dining <span class="badge rooftop">Premium</span></td>
+                                    <td>4,500</td>
+                                    <td>Rs. 290</td>
+                                    <td>Rs. 1,305,000</td>
+                                </tr>
+                                <tr>
+                                    <td><strong>TOTAL</strong></td>
+                                    <td></td>
+                                    <td><strong>22,000</strong></td>
+                                    <td><strong>Avg Rs. 239</strong></td>
+                                    <td><strong>Rs. 5,262,500</strong></td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <div class="right-column">
+                    <!-- Donut Chart -->
+                    <div class="card donut-card">
+                        <div class="card-header">
+                            <div class="card-title">Space by Category</div>
+                        </div>
+                        <div class="donut-container">
+                            <canvas id="donutChart"></canvas>
+                            <div class="donut-center">
+                                <div class="label">Total</div>
+                                <div class="value">22,000</div>
+                            </div>
+                        </div>
+                        <div class="donut-legend">
+                            <div class="donut-legend-item">
+                                <span class="dot" style="background: #f97316;"></span>
+                                <div class="info">
+                                    <div class="label">QSR + Pastry</div>
+                                    <div class="value">4,000</div>
+                                </div>
+                            </div>
+                            <div class="donut-legend-item">
+                                <span class="dot" style="background: #ec4899;"></span>
+                                <div class="info">
+                                    <div class="label">Dessert</div>
+                                    <div class="value">4,500</div>
+                                </div>
+                            </div>
+                            <div class="donut-legend-item">
+                                <span class="dot" style="background: #8b5cf6;"></span>
+                                <div class="info">
+                                    <div class="label">Co-Work</div>
+                                    <div class="value">9,000</div>
+                                </div>
+                            </div>
+                            <div class="donut-legend-item">
+                                <span class="dot" style="background: #06b6d4;"></span>
+                                <div class="info">
+                                    <div class="label">Rooftop</div>
+                                    <div class="value">4,500</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Property Card -->
+                    <div class="card">
+                        <div class="property-image">COLOMBO 4</div>
+                        <div class="property-details">
+                            <div class="address">Premium Commercial Building</div>
+                            <div class="property-features">
+                                <span class="feature">
+                                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><line x1="3" y1="9" x2="21" y2="9"/><line x1="9" y1="21" x2="9" y2="9"/></svg>
+                                    5 Floors
+                                </span>
+                                <span class="feature">
+                                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+                                    Bambalapitiya
+                                </span>
+                                <span class="feature">
+                                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="7" width="20" height="14" rx="2" ry="2"/><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/></svg>
+                                    22,000 sqft
+                                </span>
+                            </div>
+                            <div class="property-price">Rs. 5.26M/mo</div>
+                            <div class="property-date">Annual: Rs. 63.1M (~USD 197K)</div>
+                        </div>
+                    </div>
+
+                    <!-- Quick Stats -->
+                    <div class="card">
+                        <div class="card-title" style="margin-bottom: 16px;">Key Metrics</div>
+                        <div style="display: flex; flex-direction: column; gap: 10px;">
+                            <div class="quick-stat">
+                                <span class="label">Avg Rate/Sq Ft</span>
+                                <span class="value">Rs. 239</span>
+                            </div>
+                            <div class="quick-stat">
+                                <span class="label">Ground Floor Premium</span>
+                                <span class="value">Rs. 300-350</span>
+                            </div>
+                            <div class="quick-stat">
+                                <span class="label">Rooftop Premium</span>
+                                <span class="value">Rs. 290</span>
+                            </div>
+                            <div class="quick-stat">
+                                <span class="label">Office Rate</span>
+                                <span class="value">Rs. 125-180</span>
+                            </div>
+                            <div class="quick-stat">
+                                <span class="label">Security Deposit</span>
+                                <span class="value">6 Months</span>
+                            </div>
+                            <div class="quick-stat highlight">
+                                <span class="label">USD Equivalent</span>
+                                <span class="value">~$197K/yr</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+
+        <!-- Mobile Navigation -->
+        <nav class="mobile-nav">
+            <div class="nav-item active">
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>
+            </div>
+            <div class="nav-item">
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></svg>
+            </div>
+            <div class="nav-item">
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
+            </div>
+            <div class="nav-item">
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+            </div>
+        </nav>
+    </div>
+
+    <script>
+        // Revenue Bar Chart by Category
+        const revenueCtx = document.getElementById('revenueChart').getContext('2d');
+        new Chart(revenueCtx, {
+            type: 'bar',
+            data: {
+                labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'],
+                datasets: [
+                    {
+                        label: 'QSR + Pastry',
+                        data: [1.33, 1.33, 1.33, 1.33, 1.33, 1.33, 1.33, 1.33, 1.33, 1.33, 1.33, 1.33],
+                        backgroundColor: '#f97316',
+                        borderRadius: 3
+                    },
+                    {
+                        label: 'Dessert & Lifestyle',
+                        data: [1.26, 1.26, 1.26, 1.26, 1.26, 1.26, 1.26, 1.26, 1.26, 1.26, 1.26, 1.26],
+                        backgroundColor: '#ec4899',
+                        borderRadius: 3
+                    },
+                    {
+                        label: 'Co-Work / Office',
+                        data: [1.37, 1.37, 1.37, 1.37, 1.37, 1.37, 1.37, 1.37, 1.37, 1.37, 1.37, 1.37],
+                        backgroundColor: '#8b5cf6',
+                        borderRadius: 3
+                    },
+                    {
+                        label: 'Rooftop Dining',
+                        data: [1.30, 1.30, 1.30, 1.30, 1.30, 1.30, 1.30, 1.30, 1.30, 1.30, 1.30, 1.30],
+                        backgroundColor: '#06b6d4',
+                        borderRadius: 3
+                    }
+                ]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: { display: false },
+                    tooltip: {
+                        backgroundColor: '#1e293b',
+                        padding: 12,
+                        cornerRadius: 8,
+                        callbacks: {
+                            label: function(context) {
+                                return context.dataset.label + ': Rs. ' + context.parsed.y + 'M';
+                            }
+                        }
+                    }
+                },
+                scales: {
+                    y: {
+                        stacked: true,
+                        grid: { color: '#f1f5f9' },
+                        ticks: {
+                            callback: function(value) {
+                                return 'Rs. ' + value + 'M';
+                            },
+                            color: '#94a3b8',
+                            font: { size: 11 }
+                        }
+                    },
+                    x: {
+                        stacked: true,
+                        grid: { display: false },
+                        ticks: { color: '#94a3b8', font: { size: 11 } }
+                    }
+                }
+            }
+        });
+
+        // Donut Chart
+        const donutCtx = document.getElementById('donutChart').getContext('2d');
+        new Chart(donutCtx, {
+            type: 'doughnut',
+            data: {
+                labels: ['QSR + Pastry', 'Dessert & Lifestyle', 'Co-Work / Office', 'Rooftop Dining'],
+                datasets: [{
+                    data: [4000, 4500, 9000, 4500],
+                    backgroundColor: ['#f97316', '#ec4899', '#8b5cf6', '#06b6d4'],
+                    borderWidth: 0,
+                    cutout: '70%'
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: { display: false },
+                    tooltip: {
+                        backgroundColor: '#1e293b',
+                        padding: 12,
+                        cornerRadius: 8,
+                        callbacks: {
+                            label: function(context) {
+                                return context.label + ': ' + context.parsed.toLocaleString() + ' sq ft';
+                            }
+                        }
+                    }
+                }
+            }
+        });
+    </script>
+</body>
+</html>
