@@ -2,6 +2,7 @@
 (https://rehangrero.github.io/building/bamba_presentation.html)
 # building
 
-https://rehangrero.github.io/building/Property_Dashboard_Colombo4.html
+https://rehangrero.github.io/building/property-app.html..txt.html
+
 
 Board presentation
